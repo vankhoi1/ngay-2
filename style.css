@@ -1,3 +1,20 @@
+/* Comment deleted style */
+.comment-deleted {
+  text-decoration: line-through;
+  opacity: 0.5;
+  color: #b91c1c !important;
+}
+.deleted-row {
+  opacity: 0.55;
+  text-decoration: line-through;
+  background: repeating-linear-gradient(135deg, #f8fafc 0 8px, #f3e8ff 8px, #f8fafc 16px);
+  pointer-events: auto;
+  filter: grayscale(0.3);
+}
+.deleted-row:hover {
+  background: repeating-linear-gradient(135deg, #f3e8ff 0 8px, #f8fafc 8px, #f3e8ff 16px);
+  box-shadow: none;
+}
 /* Modern, colorful, professional UI */
  :root{
   --bg:#f6f8fb;

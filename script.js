@@ -1,9 +1,96 @@
+// Tạo sản phẩm mới với ID tự tăng (chuỗi)
+function createProduct(newProduct) {
+  // Nếu không có id, tự động lấy maxId+1 (dạng chuỗi)
+  let maxId = 0;
+  products.forEach(p => {
+    const pid = parseInt(p.id, 10);
+    if (!isNaN(pid) && pid > maxId) maxId = pid;
+  });
+  if (!newProduct.id || newProduct.id === '') {
+    newProduct.id = String(maxId + 1);
+  }
+  products.push(newProduct);
+  renderTable();
+  // TODO: Lưu lại vào db.json nếu có backend
+}
 // Sử dụng file db.json trong cùng folder
 const DATA_URL = 'db.json';
 
 // products array will hold either products or posts (depending on db.json)
 let products = [];
 let comments = [];
+
+// CRUD cho comments
+function loadComments(data) {
+  if (data.comments && Array.isArray(data.comments)) {
+    comments = data.comments;
+  } else if (Array.isArray(data.comments)) {
+    comments = data.comments;
+  } else if (Array.isArray(data)) {
+    // Nếu db.json là mảng chung
+    comments = [];
+  } else {
+    comments = [];
+  }
+}
+
+function renderComments(list = comments) {
+  const cmtBox = document.getElementById('commentsBox');
+  if (!cmtBox) return;
+  cmtBox.innerHTML = '';
+  if (!list.length) {
+    cmtBox.innerHTML = '<div class="text-muted">Chưa có bình luận nào.</div>';
+    return;
+  }
+  list.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'comment-item' + (c.isDeleted ? ' comment-deleted' : '');
+    div.innerHTML = `
+      <span class="comment-id">#${escapeHtml(c.id)}</span>
+      <span class="comment-content">${escapeHtml(c.content)}</span>
+      <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteComment('${c.id}')">Xoá</button>
+      <button class="btn btn-sm btn-outline-primary ms-1" onclick="editComment('${c.id}')">Sửa</button>
+    `;
+    cmtBox.appendChild(div);
+  });
+}
+
+function createComment(newComment) {
+  // ID tự tăng dạng chuỗi
+  let maxId = 0;
+  comments.forEach(c => { const cid = parseInt(c.id, 10); if (!isNaN(cid) && cid > maxId) maxId = cid; });
+  if (!newComment.id || newComment.id === '') newComment.id = String(maxId + 1);
+  comments.push(newComment);
+  renderComments();
+  // TODO: Lưu lại vào db.json nếu có backend
+}
+
+function updateComment(id, newContent) {
+  const idx = comments.findIndex(c => String(c.id) === String(id));
+  if (idx !== -1) {
+    comments[idx].content = newContent;
+    renderComments();
+    // TODO: Lưu lại vào db.json nếu có backend
+  }
+}
+
+function deleteComment(id) {
+  const idx = comments.findIndex(c => String(c.id) === String(id));
+  if (idx !== -1) {
+    comments[idx].isDeleted = true;
+    renderComments();
+    // TODO: Lưu lại vào db.json nếu có backend
+  }
+}
+
+function editComment(id) {
+  const c = comments.find(x => String(x.id) === String(id));
+  if (!c) return;
+  const newContent = prompt('Nội dung mới:', c.content);
+  if (newContent !== null && newContent.trim() !== '') {
+    updateComment(id, newContent.trim());
+  }
+}
 let currentSort = { key: null, dir: 1 }; // dir: 1 (tăng), -1 (giảm)
 let searchQuery = '';
 let currentPage = 1;
@@ -129,7 +216,8 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.classList.add('row-clickable');
     tr.setAttribute('role','button');
-    // onerror will try category image (if available) before falling back to placeholder; uses retry logic and logs the failed URLs for debugging
+    // Nếu là xoá mềm thì thêm class deleted-row
+    if (p.isDeleted) tr.classList.add('deleted-row');
     tr.innerHTML = `
       <td>${escapeHtml(p.id)}</td>
       <td><img class="thumb" src="${imgSrc}" title="${escapeHtml(mainImg || catImg || '')}" alt="${escapeHtml(p.title || '')}" loading="lazy" data-src="${escapeHtml(mainImg || '')}" data-cat="${escapeHtml(catImg || '')}" data-retries="0" data-tried-cat="0" data-tried-proxy="0" onerror="imgErrorHandler(this, '${placeholder}')"></td>
@@ -147,6 +235,16 @@ function renderTable() {
   if (totalCount) totalCount.textContent = `${totalItems} / ${products.length}`;
 
   renderPagination(totalPages);
+}
+
+// Xoá mềm sản phẩm (thêm isDeleted:true)
+function deleteProduct(id) {
+  const idx = products.findIndex(p => String(p.id) === String(id));
+  if (idx !== -1) {
+    products[idx].isDeleted = true;
+    renderTable();
+    // TODO: Lưu lại vào db.json nếu có backend
+  }
 }
 
 function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
