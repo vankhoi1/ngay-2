@@ -1,20 +1,124 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh Sách Sản Phẩm - Bi Shop</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Danh Sách Sản Phẩm </title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Cửa Hàng Của Fen</h1>
-    </header>
+  <header class="py-4 mb-4 header-gradient">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand d-flex align-items-center gap-3">
+          <div class="logo shadow-sm">🛍️</div>
+          <div>
+            <h1 class="mb-0 brand-title">Cửa Hàng</h1>
+            <small class="text-muted">Danh sách sản phẩm chuyên nghiệp</small>
+          </div>
+        </div>
+      </div>
+      <div class="d-none d-md-flex align-items-center gap-2">
+        <button class="btn btn-outline-light btn-sm"><i class="bi bi-plus-lg"></i> Thêm SP</button>
+        <button class="btn btn-light btn-sm">Tùy chỉnh</button>
+      </div>
+    </div>
+  </header>
 
-    <main id="product-list" class="container">
-        <p>Đang tải dữ liệu, đợi tui xíu nha...</p>
-    </main>
+  <main class="container">
+    <div class="row mb-3">
+      <div class="col-md-8 mb-2">
+        <div class="input-group shadow-sm search-input">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input id="searchInput" type="search" class="form-control" placeholder="Tìm theo tên sản phẩm..." aria-label="Tìm theo tên sản phẩm">
+          <button id="clearSearch" class="btn btn-outline-secondary" type="button" title="Xóa tìm kiếm"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <small class="small-note text-muted">Gõ để lọc theo tên sản phẩm (không phân biệt hoa/thường)</small>
+      </div>
+      <div class="col-md-4 text-md-end d-flex justify-content-end align-items-center gap-2">
+        <div class="btn-group me-2" role="group" aria-label="Sắp xếp">
+          <button id="sortNameBtn" class="btn btn-outline-secondary btn-sm" onclick="toggleSort('title')">Tên ↕</button>
+          <button id="sortPriceBtn" class="btn btn-outline-secondary btn-sm" onclick="toggleSort('price')">Giá ↕</button>
+        </div>
+        <div class="me-2">
+          <select id="perPageSelect" class="form-select form-select-sm">
+            <option value="5">5 / trang</option>
+            <option value="10" selected>10 / trang</option>
+            <option value="25">25 / trang</option>
+          </select>
+        </div>
+        <div class="me-2">
+          <button id="exportCsvBtn" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</button>
+        </div>
+        <div>
+          <span id="totalCount" class="badge bg-secondary">0</span>
+        </div>
+      </div>
+    </div>
 
-    <script src="script.js"></script>
+    <div class="card shadow-sm card-modern">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table id="productsTable" class="table table-striped table-hover align-middle mb-0 table-modern">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Tên</th>
+                <th>Danh mục</th>
+                <th>Giá</th>
+                <th>Mô tả</th>
+              </tr>
+            </thead>
+            <tbody id="productsTbody">
+              <tr><td colspan="6" class="text-center p-4 text-muted">Đang tải dữ liệu, đợi tí...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation example" class="mt-3">
+      <ul id="pagination" class="pagination justify-content-center mb-0"></ul>
+    </nav>
+
+    <!-- Detail modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="detailModalLabel">Chi tiết</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex gap-3 align-items-start">
+              <img id="modalImage" src="" alt="" class="modal-product-img rounded shadow-sm">
+              <div>
+                <h5 id="modalTitle" class="mb-1"></h5>
+                <p class="mb-1"><strong>Giá:</strong> <span id="modalPrice"></span></p>
+                <p class="mb-1"><strong>Danh mục:</strong> <span id="modalCategory"></span></p>
+                <p class="text-muted small" id="modalCreated"></p>
+              </div>
+            </div>
+            <hr>
+            <p id="modalDescription" class="text-muted"></p>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bootstrap Bundle with Popper (optional) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
-</html>
+</html> 
